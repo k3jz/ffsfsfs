@@ -152,7 +152,25 @@ local Silentaim = Legit:section({name = "Bullet Redirection", side = "left",size
 local Camlock = Legit:section({name = "Aim Assist", side = "Right",size = 445})
 local Both = Legit:section({name = "Both", side = "Left",size = 103})
 
---// Roblox Lua Script - Toggleable CFrame Speed Walk with Customizable Key (Activation Key)
+local Rage = Window:page({name = "Rage"})
+local TargetSection = Rage:section({name = "Target Aim", side = "left",size = 350})
+local StrafeSection = Rage:section({name = "Target Aim", side = "left",size = 150})
+local CFrameSection = Rage:section({name = "CFrame", side = "right",size = 80})
+local DrawingSection = Rage:section({name = "Drawings", side = "right",size = 130})
+
+DrawingSection:toggle({name = "Tracer", def = false, callback = function(Boolean)
+    VIN9.Target.Drawings.Tracer = Boolean
+end})
+
+DrawingSection:slider({name = "Thickness", def = 1, max = 10, min = 1, rounding = false, callback = function(Value)
+    VIN9.Target.Drawings.Thickness = Value
+end})
+
+DrawingSection:slider({name = "Transparency", def = 1, max = 1, min = 0.1, rounding = false, callback = function(Value)
+    VIN9.Target.Drawings.Transparency = Value
+end})
+
+--// Roblox Lua Script - Toggleable CFrame Speed Walk with Customizable Key
 
 -- Services
 local Players = game:GetService("Players")
@@ -198,17 +216,17 @@ CFrameSection:keybind({
     end
 })
 
--- Key Press Detection (For Activating and Deactivating CFrame Speed Walk)
+-- Key Press Detection
 UserInputService.InputBegan:Connect(function(input, isProcessed)
     if isProcessed then return end
     if input.KeyCode == activationKey then
-        cframespeedtoggle = not cframespeedtoggle -- Toggle CFrame speed walk on/off
+        keybindActive = not keybindActive
     end
 end)
 
--- Main Movement Loop (CFrame Speed Walk)
+-- Main Movement Loop
 RunService.RenderStepped:Connect(function()
-    if cframespeedtoggle and character and humanoidRootPart then
+    if cframespeedtoggle and keybindActive and character and humanoidRootPart then
         local humanoid = character:FindFirstChildOfClass("Humanoid")
         if humanoid and humanoid.MoveDirection.Magnitude > 0 then
             humanoidRootPart.CFrame = humanoidRootPart.CFrame + (humanoid.MoveDirection * speedvalue)
@@ -216,14 +234,9 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Target Section Setup
-TargetSection:toggle({
-    name = "Enabled",
-    def = false,
-    callback = function(Boolean)
-        VIN9.Target.Enabled = Boolean
-    end
-})
+TargetSection:toggle({name = "Enabled", def = false, callback = function(Boolean)
+    VIN9.Target.Enabled = Boolean
+end})
 
 TargetSection:dropdown({name = "Key", def = "c", max = 7, options = {"c", "q", "x", "z","t", "v", "g", "y"}, callback = function(part)
     VIN9.Target.Keybind = part
@@ -878,3 +891,67 @@ task.spawn(function()
         end)
     end
 end)
+local AnimationSpeed = 1
+
+local animation = Instance.new("Animation")
+animation.AnimationId = "rbxassetid://10714340543"
+
+local animationTrack
+local isPlaying = false
+local flossEnabled = false
+
+local function loadAnimationTrack(character)
+    local humanoid = character:WaitForChild("Humanoid")
+    animationTrack = humanoid:LoadAnimation(animation)
+    animationTrack.Looped = true
+    animationTrack.Priority = Enum.AnimationPriority.Action
+    
+    if flossEnabled then
+        task.wait(0.6)
+        animationTrack:Play()
+        animationTrack:AdjustSpeed(AnimationSpeed)
+        isPlaying = true
+    end
+end
+
+game:GetService("Players").LocalPlayer.CharacterAdded:Connect(function(character)
+    loadAnimationTrack(character)
+end)
+
+if game:GetService("Players").LocalPlayer.Character then
+    loadAnimationTrack(game:GetService("Players").LocalPlayer.Character)
+end
+
+local stutz = Tabs.Character:AddRightGroupbox('Misc')
+
+stutz:AddToggle("FlossToggle", {
+    Text = "floss",
+    Default = false,
+    Callback = function(state)
+        flossEnabled = state
+        if state and animationTrack then
+            animationTrack:Play()
+            animationTrack:AdjustSpeed(AnimationSpeed)
+            isPlaying = true
+        elseif not state and animationTrack then
+            animationTrack:Stop()
+            isPlaying = false
+        end
+    end
+}):AddKeyPicker("FlossKeybindPicker", {
+    Default = "V",
+    Text = "Floss",
+    Mode = "Toggle",
+    Callback = function(key)
+        if UserInputService:GetFocusedTextBox() then return end
+        if flossEnabled and animationTrack then
+            if isPlaying then
+                animationTrack:Stop()
+            else
+                animationTrack:Play()
+                animationTrack:AdjustSpeed(AnimationSpeed)
+            end
+            isPlaying = not isPlaying
+        end
+    end
+})
