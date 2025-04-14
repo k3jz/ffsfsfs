@@ -1,3 +1,135 @@
+getgenv().cframeSpeedEnabled = false, false, false
+getgenv().cframeSpeedKeybindActive = false, false
+getgenv().cframeSpeed = 16, 50, 10
+
+local uhhh = Tabs.Character:AddLeftGroupbox('Movement')
+
+uhhh:AddToggle('CFrameSpeedToggle', {
+    Text = 'cframe',
+    Default = false,
+    Callback = function(state)
+        getgenv().cframeSpeedEnabled = state
+        if not state then getgenv().cframeSpeedKeybindActive = false end
+    end,
+}):AddKeyPicker('CFrameSpeedKeybind', {
+    Default = 'T',
+    Text = 'Cframe',
+    Mode = 'Toggle',
+    Callback = function(state)
+        if game:GetService("UserInputService"):GetFocusedTextBox() then return end
+        if getgenv().cframeSpeedEnabled then getgenv().cframeSpeedKeybindActive = state end
+    end,
+})
+
+uhhh:AddSlider("CFrameSpeedSlider", {
+    Text = "CFrame Speed",
+    Default = 16,
+    Min = 1,
+    Max = 100,
+    Rounding = 0,
+    Callback = function(value)
+        getgenv().cframeSpeed = value
+    end
+})
+
+task.spawn(function()
+    while task.wait(0) do
+        local player = game.Players.LocalPlayer
+        local character = player.Character
+        local humanoid = character and character:FindFirstChild("Humanoid")
+        if getgenv().cframeSpeedEnabled and getgenv().cframeSpeedKeybindActive and character and humanoid and humanoid.MoveDirection.Magnitude > 0 then
+            character:TranslateBy(humanoid.MoveDirection * getgenv().cframeSpeed * task.wait() * 3)
+        end
+    end
+end)
+
+
+getgenv().FlightKeybind = Enum.KeyCode.X
+getgenv().FlySpeed = 50
+getgenv().FlightEnabled = false
+getgenv().Flying = false
+
+local function CreateCore()
+    if workspace:FindFirstChild("Core") then workspace.Core:Destroy() end
+    local Core = Instance.new("Part")
+    Core.Name = "Core"
+    Core.Size = Vector3.new(0.05, 0.05, 0.05)
+    Core.CanCollide = false
+    Core.Transparency = 1
+    Core.Parent = workspace
+    local Weld = Instance.new("Weld", Core)
+    Weld.Part0 = Core
+    Weld.Part1 = LocalPlayer.Character.HumanoidRootPart
+    Weld.C0 = CFrame.new(0, 0, 0)
+    return Core
+end
+
+local function StartFly()
+    if getgenv().Flying then return end
+    getgenv().Flying = true
+    LocalPlayer.Character:FindFirstChildOfClass("Humanoid").PlatformStand = true
+    local Core = CreateCore()
+    local BV = Instance.new("BodyVelocity", Core)
+    BV.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+    BV.Velocity = Vector3.zero
+    local BG = Instance.new("BodyGyro", Core)
+    BG.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+    BG.P = 9e4
+    BG.CFrame = Core.CFrame
+    RunService.RenderStepped:Connect(function()
+        if not getgenv().Flying then return end
+        local camera = workspace.CurrentCamera
+        local moveDirection = Vector3.zero
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDirection = moveDirection + camera.CFrame.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDirection = moveDirection - camera.CFrame.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDirection = moveDirection - camera.CFrame.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDirection = moveDirection + camera.CFrame.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveDirection = moveDirection + Vector3.new(0, 1, 0) end
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then moveDirection = moveDirection - Vector3.new(0, 1, 0) end
+        BV.Velocity = moveDirection * getgenv().FlySpeed
+        BG.CFrame = camera.CFrame
+    end)
+end
+
+local function StopFly()
+    if not getgenv().Flying then return end
+    getgenv().Flying = false
+    LocalPlayer.Character:FindFirstChildOfClass("Humanoid").PlatformStand = false
+    if workspace:FindFirstChild("Core") then workspace.Core:Destroy() end
+end
+
+uhhh:AddToggle("FlightToggle", {
+    Text = "Flight",
+    Default = false,
+    Callback = function(state)
+        getgenv().FlightEnabled = state
+        if not state then StopFly() end
+    end
+}):AddKeyPicker("FlightKeybindPicker", {
+    Default = "X",
+    Text = "Flight",
+    Mode = "Toggle",
+    Callback = function(state)
+        if UserInputService:GetFocusedTextBox() then return end
+        if state and getgenv().FlightEnabled then
+            StartFly()
+        else
+            StopFly()
+        end
+    end
+})
+
+uhhh:AddSlider("FlySpeedSlider", {
+    Text = "Fly Speed",
+    Default = 50,
+    Min = 10,
+    Max = 5000,
+    Rounding = 0,
+    Callback = function(value)
+        getgenv().FlySpeed = value
+    end
+})
+
 --// Self leaked
 
 73560 = {
