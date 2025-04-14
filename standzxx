@@ -152,25 +152,7 @@ local Silentaim = Legit:section({name = "Bullet Redirection", side = "left",size
 local Camlock = Legit:section({name = "Aim Assist", side = "Right",size = 445})
 local Both = Legit:section({name = "Both", side = "Left",size = 103})
 
-local Rage = Window:page({name = "Rage"})
-local TargetSection = Rage:section({name = "Target Aim", side = "left",size = 350})
-local StrafeSection = Rage:section({name = "Target Aim", side = "left",size = 150})
-local CFrameSection = Rage:section({name = "CFrame", side = "right",size = 80})
-local DrawingSection = Rage:section({name = "Drawings", side = "right",size = 130})
-
-DrawingSection:toggle({name = "Tracer", def = false, callback = function(Boolean)
-    VIN9.Target.Drawings.Tracer = Boolean
-end})
-
-DrawingSection:slider({name = "Thickness", def = 1, max = 10, min = 1, rounding = false, callback = function(Value)
-    VIN9.Target.Drawings.Thickness = Value
-end})
-
-DrawingSection:slider({name = "Transparency", def = 1, max = 1, min = 0.1, rounding = false, callback = function(Value)
-    VIN9.Target.Drawings.Transparency = Value
-end})
-
---// Roblox Lua Script - Toggleable CFrame Speed Walk with Customizable Key
+--// Roblox Lua Script - Toggleable CFrame Speed Walk with Customizable Key (Activation Key)
 
 -- Services
 local Players = game:GetService("Players")
@@ -216,17 +198,17 @@ CFrameSection:keybind({
     end
 })
 
--- Key Press Detection
+-- Key Press Detection (For Activating and Deactivating CFrame Speed Walk)
 UserInputService.InputBegan:Connect(function(input, isProcessed)
     if isProcessed then return end
     if input.KeyCode == activationKey then
-        keybindActive = not keybindActive
+        cframespeedtoggle = not cframespeedtoggle -- Toggle CFrame speed walk on/off
     end
 end)
 
--- Main Movement Loop
+-- Main Movement Loop (CFrame Speed Walk)
 RunService.RenderStepped:Connect(function()
-    if cframespeedtoggle and keybindActive and character and humanoidRootPart then
+    if cframespeedtoggle and character and humanoidRootPart then
         local humanoid = character:FindFirstChildOfClass("Humanoid")
         if humanoid and humanoid.MoveDirection.Magnitude > 0 then
             humanoidRootPart.CFrame = humanoidRootPart.CFrame + (humanoid.MoveDirection * speedvalue)
@@ -234,9 +216,14 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
-TargetSection:toggle({name = "Enabled", def = false, callback = function(Boolean)
-    VIN9.Target.Enabled = Boolean
-end})
+-- Target Section Setup
+TargetSection:toggle({
+    name = "Enabled",
+    def = false,
+    callback = function(Boolean)
+        VIN9.Target.Enabled = Boolean
+    end
+})
 
 TargetSection:dropdown({name = "Key", def = "c", max = 7, options = {"c", "q", "x", "z","t", "v", "g", "y"}, callback = function(part)
     VIN9.Target.Keybind = part
